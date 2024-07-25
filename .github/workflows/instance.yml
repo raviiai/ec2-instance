@@ -62,34 +62,34 @@ jobs:
     #   working-directory: .
 
   # Destroying the  ec2 instance
-  destroy_instance:
-    runs-on: ubuntu-latest
+#   destroy_instance:
+#     runs-on: ubuntu-latest
     
-    # Execute this job only if the action input is "destroy"
-    if: ${{ github.event.inputs.action == 'destroy' }}
+#     # Execute this job only if the action input is "destroy"
+#     if: ${{ github.event.inputs.action == 'destroy' }}
     
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+#     steps:
+#     - name: Checkout code
+#       uses: actions/checkout@v2
       
-# adding aws keys. Please store the value of these key in GitHub variables
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+# # adding aws keys. Please store the value of these key in GitHub variables
+#     - name: Configure AWS credentials
+#       uses: aws-actions/configure-aws-credentials@v2
+#       with:
+#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         
-    - name: Terraform Init
-      run: terraform init
-      working-directory: .
+#     - name: Terraform Init
+#       run: terraform init
+#       working-directory: .
       
-    - name: Terraform FMT
-      run: terraform fmt
-      working-directory: .
+#     - name: Terraform FMT
+#       run: terraform fmt
+#       working-directory: .
       
       
-    # Destroy all resources 
-    - name: Terraform Destroy
-    - name: terraform apply
-      run: terraform destroy -var instanceName=${{ github.event.inputs.instanceName }} -var awsRegion=${{ github.event.inputs.awsRegion }} -auto-approve
-      working-directory: .
+#     # Destroy all resources 
+#     - name: Terraform Destroy
+#     - name: terraform apply
+#       run: terraform destroy -var instanceName=${{ github.event.inputs.instanceName }} -var awsRegion=${{ github.event.inputs.awsRegion }} -auto-approve
+#       working-directory: .
