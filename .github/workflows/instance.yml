@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     
     # Execute this step only if the action input is "apply"
-    if: ${{ github.event.inputs.action == 'apply' }}
+    # if: ${{ github.event.inputs.action == 'apply' }}
     # Define the steps for this job
     steps:
     
@@ -55,11 +55,11 @@ jobs:
       run: terraform validate
       working-directory: .
       
-    # Apply the Terraform plan
-    - name: Terraform vars
-    - name: terraform apply
-      run: terraform apply -var instanceName=${{ github.event.inputs.instanceName }} -var awsRegion=${{ github.event.inputs.awsRegion }} -var instanceType=${{ github.event.inputs.instanceType }} -auto-approve
-      working-directory: .
+    # # Apply the Terraform plan
+    # - name: Terraform vars
+    # - name: terraform apply
+    #   run: terraform apply -var instanceName=${{ github.event.inputs.instanceName }} -var awsRegion=${{ github.event.inputs.awsRegion }} -var instanceType=${{ github.event.inputs.instanceType }} -auto-approve
+    #   working-directory: .
 
   # Destroying the  ec2 instance
   destroy_instance:
