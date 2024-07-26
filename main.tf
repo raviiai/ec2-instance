@@ -11,9 +11,6 @@ terraform {
 
 provider "aws" {
   region     = var.awsRegion
-  access_key = var.access_key
-  secret_key = var.secret_key
-  #   profile = "sagar"
 }
 
 resource "aws_instance" "example_server" {
