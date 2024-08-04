@@ -29,7 +29,7 @@ resource "aws_security_group" "allow_ssh_http" {
 }
 
 resource "aws_instance" "example" {
-  ami           = "ami-0c55b159cbfafe1f0"  # Replace with Ubuntu AMI ID or appropriate AMI for your use case
+  ami           = "ami-0aff18ec83b712f05"  # Replace with Ubuntu AMI ID or appropriate AMI for your use case
   instance_type = "t2.small"
   
   # User data to install Docker, Docker Compose, pull from GitHub, and run Docker Compose
