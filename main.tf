@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 resource "aws_security_group" "allow_ssh_http" {
-  name        = "allow_ssh_http"
+  name        = "allow_ssh_http-a"
   description = "Allow SSH and HTTP access"
 
   ingress {
@@ -54,7 +54,7 @@ resource "aws_instance" "example" {
     sudo docker-compose up -d
   EOF
 
-  security_groups = [aws_security_group.allow_ssh_http.name]
+  security_groups = [aws_security_group.allow_ssh_http-a.name]
 
   tags = {
     Name = "example-instance"
