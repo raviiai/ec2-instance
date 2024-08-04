@@ -1,23 +1,23 @@
 provider "aws" {
-  region = "us-west-2"  # Adjust the region as needed
+  region = "us-west-2" # Adjust the region as needed
 }
 
 resource "aws_security_group" "allow_ssh_http" {
-  name        = "allow_ssh_http-a"
+  name        = "allow_ssh_http"
   description = "Allow SSH and HTTP access"
 
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # Allow SSH from anywhere. Change as needed for security.
+    cidr_blocks = ["0.0.0.0/0"] # Allow SSH from anywhere. Change as needed for security.
   }
 
   ingress {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # Allow HTTP from anywhere. Change as needed for security.
+    cidr_blocks = ["0.0.0.0/0"] # Allow HTTP from anywhere. Change as needed for security.
   }
 
   egress {
@@ -29,9 +29,9 @@ resource "aws_security_group" "allow_ssh_http" {
 }
 
 resource "aws_instance" "example" {
-  ami           = "ami-0aff18ec83b712f05"  # Replace with Ubuntu AMI ID or appropriate AMI for your use case
+  ami           = "ami-0aff18ec83b712f05" # Amazon Linux 2 AMI (update to the latest AMI for your region)
   instance_type = "t2.small"
-  
+
   # User data to install Docker, Docker Compose, pull from GitHub, and run Docker Compose
   user_data = <<-EOF
     #!/bin/bash
@@ -48,10 +48,8 @@ resource "aws_instance" "example" {
 
     # Clone the repository
     git clone https://github.com/raviiai/docker-compose.git /home/ubuntu/docker-compose
+    sudo docker run -d -p 80:80 --name mynginx nginx
 
-    # Change to the directory and run docker-compose up
-    cd /home/ubuntu/docker-compose
-    sudo docker-compose up -d
   EOF
 
   security_groups = [aws_security_group.allow_ssh_http.name]
