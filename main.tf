@@ -54,7 +54,7 @@ resource "aws_instance" "example" {
     sudo docker-compose up -d
   EOF
 
-  security_groups = [aws_security_group.allow_ssh_http-a.name]
+  security_groups = [aws_security_group.allow_ssh_http.name]
 
   tags = {
     Name = "example-instance"
