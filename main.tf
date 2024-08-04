@@ -1,16 +1,23 @@
 provider "aws" {
-  region = "us-west-2" # Adjust the region as needed
+  region = "us-west-2"  # Adjust the region as needed
 }
 
-resource "aws_security_group" "allow_ssh" {
-  name        = "allow_ssh"
-  description = "Allow SSH access"
+resource "aws_security_group" "allow_ssh_http" {
+  name        = "allow_ssh_http"
+  description = "Allow SSH and HTTP access"
 
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Allow SSH from anywhere. Change as needed for security.
+    cidr_blocks = ["0.0.0.0/0"]  # Allow SSH from anywhere. Change as needed for security.
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]  # Allow HTTP from anywhere. Change as needed for security.
   }
 
   egress {
@@ -22,23 +29,32 @@ resource "aws_security_group" "allow_ssh" {
 }
 
 resource "aws_instance" "example" {
-  ami           = "ami-0440fa9465661a496" # Amazon Linux 2 AMI (update to the latest AMI for your region)
+  ami           = "ami-0c55b159cbfafe1f0"  # Replace with Ubuntu AMI ID or appropriate AMI for your use case
   instance_type = "t2.small"
-
-  # User data to install Docker and Docker Compose
+  
+  # User data to install Docker, Docker Compose, pull from GitHub, and run Docker Compose
   user_data = <<-EOF
-              #!/bin/bash
-                yum update -y
-                yum install -y docker
-                service docker start
-                usermod -a -G docker ec2-user
-                curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-                chmod +x /usr/local/bin/docker-compose
-                echo "version: '3' \nservices: \n  web: \n    image: nginx" > /home/ec2-user/docker-compose.yml
-                cd /home/ec2-user
-                docker-compose up -d
-              EOF
-  security_groups = [aws_security_group.allow_ssh.name]
+    #!/bin/bash
+    # Update package list and install Docker and Git
+    sudo apt-get update
+    sudo apt-get install -y docker.io git curl
+
+    # Start Docker and enable it to run on boot
+    sudo systemctl start docker
+    sudo systemctl enable docker
+
+    # Add the EC2 user to the Docker group
+    sudo usermod -aG docker ubuntu
+
+    # Clone the repository
+    git clone https://github.com/raviiai/docker-compose.git /home/ubuntu/docker-compose
+
+    # Change to the directory and run docker-compose up
+    cd /home/ubuntu/docker-compose
+    sudo docker-compose up -d
+  EOF
+
+  security_groups = [aws_security_group.allow_ssh_http.name]
 
   tags = {
     Name = "example-instance"
