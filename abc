@@ -1,0 +1,53 @@
+param($eventGridEvent, $TriggerMetadata)
+
+# Make sure to pass hashtables to Out-String so they're logged correctly
+$eventGridEvent | ConvertTo-Json | Write-Host
+
+# resource group of storage account
+$resourceGroup = $env:storageaccountresourcegroup
+
+# storage account name
+$storageAccountName = $env:storageaccountname
+
+# key vault secret name
+$secretName = $env:secretName 
+
+# key vault Name 
+$keyVaultName = $env:keyVaultName
+
+Write-Host "Key Vault Name: $keyVAultName"
+Write-Host "Secret Name: $secretName"
+
+try
+    {
+        Write-Host "Rotation started..."
+        # set context to specific subscription. If you have one subscription, you can ignore this line.
+        Set-AzContext -Subscription $env:azuresubscription
+
+        # Get the key1 from storage account
+        $storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $resourceGroup -Name $storageAccountName).Value[0]
+
+        # Generate New Key
+        New-AzStorageAccountKey -ResourceGroupName $resourceGroup -Name $storageAccountName -KeyName key1
+        Write-Host "New storage account access key has been generated successfully!!!"
+
+        # Get the new key
+        $storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $resourceGroup -Name $storageAccountName).Value[0]    
+
+        $secretvalue = ConvertTo-SecureString $storageAccountKey -AsPlainText -Force   
+
+        # Get the new expiration of key
+        $ts = New-TimeSpan -Days 0 -Hours 0 -Minutes 2
+        $expires = (get-date) + $ts
+
+        # set the new secret value
+        $secret = Set-AzKeyVaultSecret -VaultName $keyVAultName -Name $secretName -SecretValue $secretvalue -Expires $expires    
+        Write-Host "Secret is updated successfully in the key vault!!!. Secret Name: $secretName"
+        Write-Host "Secret Rotated Successfully..."
+
+    }
+catch
+    {
+        $message = $_
+        Write-Error -Message "Error Occurred!!! $message" -ErrorAction Stop
+    }
