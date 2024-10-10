@@ -1,0 +1,56 @@
+param (
+    [string]$SubscriptionId = "<YourSubscriptionId>",
+    [string]$ResourceGroupName = "<YourResourceGroupName>"
+)
+
+# Connect to Azure
+$connection = Get-AutomationConnection -Name AzureRunAsConnection
+Connect-AzAccount -ServicePrincipal -Tenant $connection.TenantId `
+    -ApplicationId $connection.ApplicationId -CertificateThumbprint $connection.CertificateThumbprint
+
+# Set the context to the specified subscription
+Select-AzSubscription -SubscriptionId $SubscriptionId
+
+# Get current date and calculate expiration threshold
+$currentDate = Get-Date
+$expirationThreshold = $currentDate.AddDays(5)
+
+# Initialize results array
+$results = @()
+
+# List all storage accounts in the specified resource group
+$storageAccounts = Get-AzStorageAccount -ResourceGroupName $ResourceGroupName
+
+foreach ($account in $storageAccounts) {
+    $keys = Get-AzStorageAccountKey -ResourceGroupName $ResourceGroupName -Name $account.StorageAccountName
+
+    foreach ($key in $keys) {
+        # Check if the key is expiring soon
+        $keyExpiration = $key.LastModified.AddDays(90) # Assuming a 90-day expiration policy
+        if ($keyExpiration -lt $expirationThreshold) {
+            try {
+                # Rotate the storage account key
+                $newKey = New-AzStorageAccountKey -ResourceGroupName $ResourceGroupName -Name $account.StorageAccountName -KeyName $key.KeyName
+                
+                # Log success
+                $results += [PSCustomObject]@{
+                    StorageAccountName = $account.StorageAccountName
+                    KeyName = $key.KeyName
+                    Status = "Success"
+                    NewKey = $newKey.Value[0] # Store the new key if needed
+                }
+            } catch {
+                # Log failure
+                $results += [PSCustomObject]@{
+                    StorageAccountName = $account.StorageAccountName
+                    KeyName = $key.KeyName
+                    Status = "Fail"
+                    ErrorMessage = $_.Exception.Message
+                }
+            }
+        }
+    }
+}
+
+# Output the results
+$results | Format-Table -AutoSize
